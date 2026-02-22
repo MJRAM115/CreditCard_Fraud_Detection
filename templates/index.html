@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>AI Credit Card Fraud Detection</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;600&display=swap" rel="stylesheet">
+<style>
+body {
+    margin: 0;
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(120deg, #1f4037, #99f2c8);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.container {
+    background: white;
+    padding: 40px;
+    border-radius: 20px;
+    width: 420px;
+    box-shadow: 0 20px 45px rgba(0,0,0,0.2);
+    animation: fadeIn 0.6s ease-in-out;
+}
+@keyframes fadeIn {
+    from {opacity: 0; transform: translateY(20px);}
+    to {opacity: 1; transform: translateY(0);}
+}
+h2 {
+    text-align: center;
+    color: #1f4037;
+    margin-bottom: 25px;
+}
+.grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+.full-width {
+    grid-column: span 2;
+}
+label {
+    font-weight: 500;
+    font-size: 13px;
+    color: #333;
+}
+input {
+    width: 100%;
+    padding: 10px;
+    border-radius: 10px;
+    border: 1px solid #ddd;
+    margin-top: 4px;
+    margin-bottom: 10px;
+    font-size: 13px;
+    box-sizing: border-box;
+}
+input:focus {
+    border-color: #1f4037;
+    outline: none;
+}
+button {
+    width: 100%;
+    padding: 14px;
+    background: #1f4037;
+    border: none;
+    border-radius: 12px;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+button:hover {
+    background: #16312a;
+}
+.result {
+    margin-top: 20px;
+    padding: 12px;
+    border-radius: 10px;
+    text-align: center;
+    font-weight: 600;
+}
+.safe { background: #d4edda; color: #155724; }
+.fraud { background: #f8d7da; color: #721c24; }
+.note {
+    font-size: 11px;
+    color: #999;
+    text-align: center;
+    margin-top: -5px;
+    margin-bottom: 10px;
+}
+</style>
+</head>
+<body>
+<div class="container">
+    <h2>🔍 AI Fraud Detection</h2>
+    <p class="note">Fill key transaction details. Other fields auto-filled.</p>
+    <form method="POST" action="/predict">
+        <div class="grid">
+            <div>
+                <label>Transaction Time</label>
+                <input type="number" name="time" placeholder="e.g. 40000" required>
+            </div>
+            <div>
+                <label>Amount ($)</label>
+                <input type="number" name="amount" placeholder="e.g. 150.00" step="0.01" required>
+            </div>
+            <div>
+                <label>V1</label>
+                <input type="number" name="v1" placeholder="e.g. -1.35" step="0.0001">
+            </div>
+            <div>
+                <label>V2</label>
+                <input type="number" name="v2" placeholder="e.g. 0.84" step="0.0001">
+            </div>
+            <div>
+                <label>V3</label>
+                <input type="number" name="v3" placeholder="e.g. 1.77" step="0.0001">
+            </div>
+            <div>
+                <label>V4</label>
+                <input type="number" name="v4" placeholder="e.g. 0.37" step="0.0001">
+            </div>
+            <div>
+                <label>V14</label>
+                <input type="number" name="v14" placeholder="e.g. -0.31" step="0.0001">
+            </div>
+            <div>
+                <label>V17</label>
+                <input type="number" name="v17" placeholder="e.g. 0.07" step="0.0001">
+            </div>
+        </div>
+        <button type="submit">🔎 Analyze Transaction</button>
+    </form>
+    {% if prediction %}
+        <div class="result {{ 'fraud' if 'Fraud' in prediction else 'safe' }}">
+            {{ prediction }}
+        </div>
+    {% endif %}
+</div>
+</body>
+</html>
