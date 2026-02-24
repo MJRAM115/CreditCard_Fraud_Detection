@@ -5,21 +5,25 @@ import os
 
 app = Flask(__name__)
 
-# Load saved model, scaler, and columns
+# Load saved model files
 model = pickle.load(open("model.pkl", "rb"))
 scaler = pickle.load(open("scaler.pkl", "rb"))
 columns = pickle.load(open("columns.pkl", "rb"))
+
+# Fraud detection threshold
+THRESHOLD = 0.35   # You can tune this (0.3–0.5)
 
 @app.route("/")
 def home():
     return render_template("index.html")
 
-@app.route("/predict", methods=["GET", "POST"])
+
+@app.route("/predict", methods=["POST"])
 def predict():
-    if request.method == "GET":
-        return redirect(url_for("home"))
     try:
-        # Get form values safely
+        # --------------------------
+        # 1. Get Form Inputs
+        # --------------------------
         time = float(request.form.get("time", 0))
         amount = float(request.form.get("amount", 0))
         v1 = float(request.form.get("v1", 0))
@@ -29,10 +33,11 @@ def predict():
         v14 = float(request.form.get("v14", 0))
         v17 = float(request.form.get("v17", 0))
 
-        # Create full input with default 0
+        # --------------------------
+        # 2. Create Full Input Dict
+        # --------------------------
         input_dict = {col: 0.0 for col in columns}
 
-        # Assign values
         input_dict["Time"] = time
         input_dict["Amount"] = amount
         input_dict["V1"] = v1
@@ -42,19 +47,28 @@ def predict():
         input_dict["V14"] = v14
         input_dict["V17"] = v17
 
-        # Convert to array
+        # Convert to numpy array
         input_array = np.array([list(input_dict.values())])
 
-        # Scale input
+        # --------------------------
+        # 3. Scale Input
+        # --------------------------
         input_scaled = scaler.transform(input_array)
 
-        # Predict
-        prediction = model.predict(input_scaled)[0]
+        # --------------------------
+        # 4. Get Fraud Probability
+        # --------------------------
+        fraud_prob = model.predict_proba(input_scaled)[0][1]
 
-        if prediction == 1:
-            result = "⚠️ Fraud Detected!"
+        print("Fraud Probability:", fraud_prob)
+
+        # --------------------------
+        # 5. Apply Threshold
+        # --------------------------
+        if fraud_prob > THRESHOLD:
+            result = f"⚠️ Fraud Detected! (Risk: {round(fraud_prob*100,2)}%)"
         else:
-            result = "✅ Transaction is Safe"
+            result = f"✅ Transaction is Safe (Risk: {round(fraud_prob*100,2)}%)"
 
         return render_template("index.html", prediction=result)
 
@@ -62,7 +76,7 @@ def predict():
         return render_template("index.html", prediction=f"Error: {str(e)}")
 
 
-# IMPORTANT for Render deployment
+# Required for Render deployment
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
